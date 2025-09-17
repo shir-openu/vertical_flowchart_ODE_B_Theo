@@ -68,7 +68,7 @@
 
     .layer{position:relative; display:flex; justify-content:center; gap:var(--gap); margin-bottom:var(--v-gap); z-index:2}
 
-    /* פריסת ברירת המחדל למחלקת grid (אני משאירה לעצמי כמות־שהיא) */
+    /* הפריסה המקורית למחלקת grid – אני משאירה לעצמי ללא שינוי */
     .layer.grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(var(--w), var(--w)));
@@ -109,7 +109,7 @@
     .subcol{display:flex; flex-direction:column; align-items:center; gap:16px}
     .subcol .node.lvl4{margin-top:6px}
 
-    /* היישור הרחב הישן של L2 – אני משאירה לעצמי אותו, אבל אדרוס בהמשך */
+    /* היישור הרחב הישן של L2 – אני משאירה לעצמי אותו, אך אדרוס בהמשך */
     @media (min-width:1400px){
       #L2{
         display:grid;
@@ -121,7 +121,7 @@
       #chap3{ grid-column: 5 / span 3; justify-self:center; }
     }
 
-    /* ===== Overrides מבוקשים ===== */
+    /* ===== Overrides: שני הכחולים באותה שורה; תתי־הנושאים בשתי עמודות אנכיות ===== */
 
     /* L2 אופקי – שני הריבועים הכחולים באותה שורה מתחת לשורש */
     #L2{
@@ -132,27 +132,26 @@
       gap:var(--gap) !important;
     }
 
-    /* L3: שתי עמודות אנכיות, אחת לכל פרק.
-       כדי למנוע בלבול של RTL במספור עמודות, אני קובעת כאן direction:ltr
-       ואז משייכת במפורש את פרק 2 לעמודה הימנית ואת פרק 3 לשמאלית. */
+    /* L3 – שתי עמודות אנכיות. כדי שהעמודה השמאלית (פרק 3) לא תתחיל “מאוחר”,
+       אני מפעילה auto-placement צפוף (dense) שממלא חורים מלמעלה. */
     #L3{
       display:grid !important;
-      grid-template-columns: var(--w) var(--w) !important;
+      grid-template-columns: var(--w) var(--w) !important; /* שתי עמודות קבועות ברוחב הכרטיס */
       justify-content:center !important;
-      column-gap: var(--gap) !important;
-      row-gap: var(--v-gap) !important;
-      direction: ltr !important;      /* מייצב את מספרי העמודות */
-      grid-auto-flow: row;            /* כל פריט תופס שורה חדשה בעמודה שלו */
+      column-gap: var(--gap) !important;   /* מרווח בין העמודות */
+      row-gap: var(--v-gap) !important;    /* מרווח בין שורות בכל עמודה */
+      direction: ltr !important;           /* מייצב את מספור העמודות */
+      grid-auto-flow: row dense !important;/* ← המפתח: ממלא חורים בשורות מוקדמות */
+      align-content: start;                /* מתחיל את התוכן למעלה */
     }
     #L3 .subcol{
       width:var(--w) !important;
       max-width:var(--w) !important;
       margin:0 auto !important;
     }
-    /* מיפוי לעמודות (לא משנה את הסדר/תוכן):
-       פרק 3 = עמודה 1 (שמאלית בלוגיקה LTR), פרק 2 = עמודה 2 (ימנית) */
-    #L3 [id^="col_c3_"]{ grid-column: 1 !important; }
+    /* מיפוי לעמודות: פרק 2 לימין, פרק 3 לשמאל */
     #L3 [id^="col_c2_"]{ grid-column: 2 !important; }
+    #L3 [id^="col_c3_"]{ grid-column: 1 !important; }
 
     /* במסכים צרים מאוד – מעבר לעמודה אחת כדי שלא ייחתך */
     @media (max-width: 620px){
@@ -175,7 +174,7 @@
 
     <div class="stage">
       <div class="canvas" id="canvas">
-        <!-- אני משאירה לעצמי את שכבת הקשתות כפי שהיא -->
+        <!-- כאן אני משאירה לעצמי את שכבת הקשתות כפי שהיא -->
         <svg class="edges" id="edges" xmlns="http://www.w3.org/2000/svg"></svg>
 
         <!-- שכבה 1 -->
@@ -257,7 +256,7 @@
   </div>
 
   <script>
-    /* אני משאירה לעצמי את ה-JS ללא שינוי */
+    /* כאן אני משאירה לעצמי את ה-JS ללא שינוי */
     const edges  = document.getElementById('edges');
     const canvas = document.getElementById('canvas');
 
