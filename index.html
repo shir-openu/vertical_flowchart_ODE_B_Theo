@@ -68,7 +68,7 @@
 
     .layer{position:relative; display:flex; justify-content:center; gap:var(--gap); margin-bottom:var(--v-gap); z-index:2}
 
-    /* תצורת ברירת מחדל של L3 (נשמרת לעצמי) */
+    /* פריסת ברירת המחדל למחלקת grid (אני משאירה לעצמי כמות־שהיא) */
     .layer.grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(var(--w), var(--w)));
@@ -121,40 +121,45 @@
       #chap3{ grid-column: 5 / span 3; justify-self:center; }
     }
 
-    /* ===== Overrides: שני הריבועים הכחולים אופקית; הנכדים בשתי עמודות אנכיות ===== */
+    /* ===== Overrides מבוקשים ===== */
 
-    /* L2 אופקי – הכחולים באותה שורה מתחת לשורש */
+    /* L2 אופקי – שני הריבועים הכחולים באותה שורה מתחת לשורש */
     #L2{
       display:flex !important;
-      flex-direction:row !important;         /* אופקית */
+      flex-direction:row !important;
       justify-content:center !important;
       align-items:flex-start !important;
       gap:var(--gap) !important;
     }
 
-    /* L3 כשתי עמודות אנכיות קבועות ברוחב כרטיס */
+    /* L3: שתי עמודות אנכיות, אחת לכל פרק.
+       כדי למנוע בלבול של RTL במספור עמודות, אני קובעת כאן direction:ltr
+       ואז משייכת במפורש את פרק 2 לעמודה הימנית ואת פרק 3 לשמאלית. */
     #L3{
       display:grid !important;
-      grid-template-columns: var(--w) var(--w) !important; /* שתי עמודות */
+      grid-template-columns: var(--w) var(--w) !important;
       justify-content:center !important;
-      column-gap: var(--gap) !important;     /* מרווח בין העמודות */
-      row-gap: var(--v-gap) !important;      /* מרווח בין שורות בכל עמודה */
+      column-gap: var(--gap) !important;
+      row-gap: var(--v-gap) !important;
+      direction: ltr !important;      /* מייצב את מספרי העמודות */
+      grid-auto-flow: row;            /* כל פריט תופס שורה חדשה בעמודה שלו */
     }
     #L3 .subcol{
       width:var(--w) !important;
       max-width:var(--w) !important;
       margin:0 auto !important;
     }
-    /* מיפוי לעמודות: כל col של פרק 2 בעמודה 1, כל col של פרק 3 בעמודה 2 */
-    [id^="col_c2_"]{ grid-column: 1 !important; }
-    [id^="col_c3_"]{ grid-column: 2 !important; }
+    /* מיפוי לעמודות (לא משנה את הסדר/תוכן):
+       פרק 3 = עמודה 1 (שמאלית בלוגיקה LTR), פרק 2 = עמודה 2 (ימנית) */
+    #L3 [id^="col_c3_"]{ grid-column: 1 !important; }
+    #L3 [id^="col_c2_"]{ grid-column: 2 !important; }
 
-    /* במסכים צרים מאוד – אני משאירה לעצמי מעבר לעמודה אחת כדי לא להיחתך במסגרת צרה */
+    /* במסכים צרים מאוד – מעבר לעמודה אחת כדי שלא ייחתך */
     @media (max-width: 620px){
       #L3{
         grid-template-columns: var(--w) !important;
       }
-      [id^="col_c2_"], [id^="col_c3_"]{ grid-column: 1 !important; }
+      #L3 [id^="col_c2_"], #L3 [id^="col_c3_"]{ grid-column: 1 !important; }
     }
   </style>
 </head>
@@ -170,7 +175,7 @@
 
     <div class="stage">
       <div class="canvas" id="canvas">
-        <!-- כאן אני משאירה לעצמי את שכבת הקשתות כפי שהיא -->
+        <!-- אני משאירה לעצמי את שכבת הקשתות כפי שהיא -->
         <svg class="edges" id="edges" xmlns="http://www.w3.org/2000/svg"></svg>
 
         <!-- שכבה 1 -->
@@ -184,7 +189,7 @@
           <div class="node lvl2" id="chap3">פרק 3 – סדר גבוה</div>
         </div>
 
-        <!-- שכבה 3 + שכבה 4 (הכול נשאר זהה בתוכן ובלינקים) -->
+        <!-- שכבה 3 + שכבה 4 (התוכן והקישורים זהים) -->
         <div class="layer grid" id="L3">
           <div class="subcol" id="col_c2_homo_const">
             <div class="node lvl3" id="c2_homo_const">מד"ר לינארית הומוגנית – מקדמים קבועים </div>
@@ -252,7 +257,7 @@
   </div>
 
   <script>
-    /* כאן אני משאירה לעצמי את ה-JS ללא שינוי */
+    /* אני משאירה לעצמי את ה-JS ללא שינוי */
     const edges  = document.getElementById('edges');
     const canvas = document.getElementById('canvas');
 
