@@ -11,8 +11,8 @@
       --lvl1:#a78bfa; --lvl2:#60a5fa; --lvl3:#34d399; --lvl4:#22d3ee;
       --txt:#e5e7eb;
 
-      /* סקלת גודל כוללת */
-      --k: 1.45; 
+      /* סקלת גודל כוללת (A+/A−) — משפיעה רק על גובה/פונט/ריווח, לא על רוחב */
+      --k: 1.45;
 
       /* מידות בסיס */
       --w0:260px;
@@ -68,10 +68,11 @@
 
     .layer{position:relative; display:flex; justify-content:center; gap:var(--gap); margin-bottom:var(--v-gap); z-index:2}
 
+    /* הפריסה המקורית של L3 הייתה grid רחבה – אני משאירה לעצמי את המחלקה הכללית כמו שהיא */
     .layer.grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(var(--w), var(--w)));
-      justify-content: space-evenly; 
+      justify-content: space-evenly;
       gap: var(--gap);
     }
 
@@ -108,6 +109,7 @@
     .subcol{display:flex; flex-direction:column; align-items:center; gap:16px}
     .subcol .node.lvl4{margin-top:6px}
 
+    /* היישור הרחב הישן של L2 – אני משאירה לעצמי אותו, ואדרוס בהמשך */
     @media (min-width:1400px){
       #L2{
         display:grid;
@@ -119,29 +121,39 @@
       #chap3{ grid-column: 5 / span 3; justify-self:center; }
     }
 
-    /* === כאן אני מוסיף את ה־Overrides כדי להפוך את הנכדים לאנכיים === */
+    /* ===== Overrides לתצוגה אנכית + שתי עמודות ===== */
+
+    /* L2 אנכי (שורש למעלה, אחריו פרק 2 ואז פרק 3) */
     #L2{
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      gap: var(--v-gap) !important;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:center !important;
+      gap:var(--v-gap) !important;
     }
+
+    /* L3 כשתי עמודות אנכיות קבועות ברוחב כרטיס */
     #L3{
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      gap: var(--v-gap) !important;
+      display:grid !important;
+      grid-template-columns: var(--w) var(--w) !important; /* שתי עמודות */
+      justify-content:center !important;
+      column-gap: var(--gap) !important;   /* מרווח בין העמודות */
+      row-gap: var(--v-gap) !important;    /* מרווח בין שורות בכל עמודה */
     }
     #L3 .subcol{
-      width: var(--w) !important;
-      max-width: var(--w) !important;
-      margin: 0 auto !important;
+      width:var(--w) !important;
+      max-width:var(--w) !important;
+      margin:0 auto !important;
     }
-    .layer.grid{
-      display: block !important;
-    }
-    @media (min-width:1400px){
-      #L2{ display: flex !important; flex-direction: column !important; gap: var(--v-gap) !important; }
+    /* מיפוי לעמודות: כל col של פרק 2 בעמודה 1, כל col של פרק 3 בעמודה 2 */
+    [id^="col_c2_"]{ grid-column: 1 !important; }
+    [id^="col_c3_"]{ grid-column: 2 !important; }
+
+    /* במסכים צרים מאוד – אני משאירה לעצמי מעבר אוטומטי לעמודה אחת כדי לא להיחתך במסגרת צרה */
+    @media (max-width: 620px){
+      #L3{
+        grid-template-columns: var(--w) !important;
+      }
+      [id^="col_c2_"], [id^="col_c3_"]{ grid-column: 1 !important; }
     }
   </style>
 </head>
@@ -157,6 +169,7 @@
 
     <div class="stage">
       <div class="canvas" id="canvas">
+        <!-- כאן אני משאירה לעצמי את שכבת הקשתות כפי שהיא -->
         <svg class="edges" id="edges" xmlns="http://www.w3.org/2000/svg"></svg>
 
         <!-- שכבה 1 -->
@@ -170,10 +183,8 @@
           <div class="node lvl2" id="chap3">פרק 3 – סדר גבוה</div>
         </div>
 
-        <!-- שכבה 3 + שכבה 4 -->
+        <!-- שכבה 3 + שכבה 4 (אני משאירה לעצמי את התוכן והלינקים זהים) -->
         <div class="layer grid" id="L3">
-          <!-- כל ה־subcol שלך נשמר בדיוק כמו שהיה -->
-          <!-- c2_homo_const -->
           <div class="subcol" id="col_c2_homo_const">
             <div class="node lvl3" id="c2_homo_const">מד"ר לינארית הומוגנית – מקדמים קבועים </div>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6756889" class="node lvl4" id="c2_hc_i1">יחידות הלימוד</a>
@@ -183,7 +194,6 @@
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827875&from=topNext" class="node lvl4" id="c2_hc_i5">דוגמה - משוואת אוילר </a> 
           </div>
 
-          <!-- c2_inh_const -->
           <div class="subcol" id="col_c2_inh_const">
             <div class="node lvl3" id="c2_inh_const">מד"ר לינארית אי-הומוגנית - מקדמים קבועים</div>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758079" class="node lvl4" id="c2_ic_i1">השוואת מקדמים - יחידות הלימוד</a>
@@ -192,7 +202,6 @@
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827902&from=topNext" class="node lvl4" id="c2_ic_i4">השוואת מקדמים - דוגמה</a>
           </div>
 
-          <!-- c2_inh_cont -->
           <div class="subcol" id="col_c2_inh_cont">
             <div class="node lvl3" id="c2_inh_cont">מד"ר לינארית אי-הומוגנית - מקדמים רציפים</div>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758080" class="node lvl4" id="c2_ir_i1">וריאציית הפרמטרים - יחידות הלימוד</a>
@@ -201,7 +210,6 @@
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827876&from=topNext" class="node lvl4" id="c2_ir_i4">וריאציית הפרמטרים - דוגמה</a>
           </div>
 
-          <!-- c2_reduce -->
           <div class="subcol" id="col_c2_reduce">
             <div class="node lvl3" id="c2_reduce">הורדת סדר המשוואה – מסדר שני לסדר ראשון</div>     
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832091" class="node lvl4" id="c2_rd_i1">משוואה חסרה מטיפוס 1 - יחידות הלימוד</a>
@@ -213,7 +221,6 @@
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832083&from=topNext" class="node lvl4" id="c2_rd_i7">הורדת סדר בעזרת פתרון ידוע - דוגמה </a>
           </div>
 
-          <!-- c3_homo_const -->
           <div class="subcol" id="col_c3_homo_const">
             <div class="node lvl3" id="c3_homo_const">מד"ר לינארית הומוגנית – מקדמים קבועים (n)</div>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757240" class="node lvl4" id="c3_hc_i1">יחידות הלימוד</a>
@@ -223,7 +230,6 @@
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827877&from=topNext" class="node lvl4" id="c3_hc_i5">דוגמה</a>
           </div>
 
-          <!-- c3_inh_const -->
           <div class="subcol" id="col_c3_inh_const">
             <div class="node lvl3" id="c3_inh_const">מד"ר לינארית אי-הומוגנית - מקדמים קבועים (n)</div>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758152&from=topPrev" class="node lvl4" id="c3_ic_i1"> סדר גבוה - השוואת מקדמים - יחידות הלימוד</a>
@@ -232,10 +238,122 @@
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757243&from=topNext" class="node lvl4" id="c3_ic_i4">סדר גבוה - השוואת מקדמים - דוגמה</a>
           </div>
 
-          <!-- c3_inh_cont -->
           <div class="subcol" id="col_c3_inh_cont">
             <div class="node lvl3" id="c3_inh_cont">מד"ר לינארית אי-הומוגנית - מקדמים רציפים (n)</div>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758154" class="node lvl4" id="c3_ir_i1">סדר גבוה - וריאציית הפרמטרים - יחידות הלימוד</a>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757255&from=topNext" class="node lvl4" id="c3_ir_i2">סדר גבוה - וריאציית הפרמטרים - אינטואיציה</a>
             <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6761715&from=topNext" class="node lvl4" id="c3_ir_i3">סדר גבוה - וריאציית הפרמטרים - דרך הפתרון</a>
-            <a href="https://opal.openu.ac.il/mod/combopage/view.php?c=312647#p573761" class="node lvl
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?c=312647#p573761" class="node lvl4" id="c3_ir_i4">סדר גבוה - וריאציית הפרמטרים - דוגמה</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* כאן אני משאירה לעצמי את ה-JS ללא שינוי */
+    const edges  = document.getElementById('edges');
+    const canvas = document.getElementById('canvas');
+
+    function collectPairs(){
+      const pairs = [
+        ['root','chap2'], ['root','chap3'],
+        ['chap2','c2_homo_const'], ['chap2','c2_inh_const'], ['chap2','c2_inh_cont'], ['chap2','c2_reduce'],
+        ['chap3','c3_homo_const'], ['chap3','c3_inh_const'], ['chap3','c3_inh_cont']
+      ];
+      const map = {
+        'c2_homo_const':'c2_hc',
+        'c2_inh_const':'c2_ic',
+        'c2_inh_cont':'c2_ir',
+        'c2_reduce':'c2_rd',
+        'c3_homo_const':'c3_hc',
+        'c3_inh_const':'c3_ic',
+        'c3_inh_cont':'c3_ir'
+      };
+      Object.entries(map).forEach(([parent, base]) => {
+        for(let i=1;i<=8;i++) pairs.push([parent, `${base}_i${i}`]);
+      });
+      return pairs;
+    }
+
+    function linePath(from, to){
+      const r1 = from.getBoundingClientRect();
+      const r2 = to.getBoundingClientRect();
+      const rc = canvas.getBoundingClientRect();
+
+      const x1 = (r1.left + r1.width/2) - rc.left;
+      const y1 = (r1.bottom) - rc.top;
+      const x2 = (r2.left + r2.width/2) - rc.left;
+      const y2 = (r2.top) - rc.top;
+
+      const mid = (y1 + y2) / 2;
+      return `M ${x1},${y1} C ${x1},${mid} ${x2},${mid} ${x2},${y2}`;
+    }
+
+    function drawEdges(){
+      const w = Math.max(canvas.scrollWidth,  canvas.clientWidth);
+      const h = Math.max(canvas.scrollHeight, canvas.clientHeight);
+      edges.setAttribute('width', w);
+      edges.setAttribute('height', h);
+      edges.innerHTML = '';
+
+      collectPairs().forEach(([a,b]) => {
+        const from = document.getElementById(a);
+        const to   = document.getElementById(b);
+        if(!from || !to) return;
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', linePath(from,to));
+        path.setAttribute('fill','none');
+        path.setAttribute('stroke','var(--edge)');
+        path.setAttribute('stroke-width','2');
+        path.setAttribute('stroke-linecap','round');
+        path.setAttribute('stroke-linejoin','round');
+        path.setAttribute('vector-effect','non-scaling-stroke');
+        path.setAttribute('opacity','0.9');
+        edges.appendChild(path);
+      });
+    }
+
+    const scheduleDraw = (() => {
+      let raf = null;
+      return () => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => { raf = null; drawEdges(); });
+      };
+    })();
+
+    if (window.visualViewport) {
+      visualViewport.addEventListener('resize', scheduleDraw);
+      visualViewport.addEventListener('scroll',  scheduleDraw);
+    }
+
+    new ResizeObserver(scheduleDraw).observe(canvas);
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && ['+','-','0','='].includes(e.key)) {
+        setTimeout(scheduleDraw, 50);
+      }
+    });
+
+    let lastDPR = window.devicePixelRatio;
+    setInterval(() => {
+      if (window.devicePixelRatio !== lastDPR) {
+        lastDPR = window.devicePixelRatio;
+        scheduleDraw();
+      }
+    }, 250);
+
+    const rootStyle = document.documentElement.style;
+    const getK = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--k')) || 1;
+    const setK = (v) => { v = Math.max(1.0, Math.min(1.8, v)); rootStyle.setProperty('--k', v); scheduleDraw(); };
+
+    const zin  = document.getElementById('zin');
+    const zout = document.getElementById('zout');
+    if (zin)  zin.addEventListener('click',  () => setK(getK() + 0.1));
+    if (zout) zout.addEventListener('click', () => setK(getK() - 0.1));
+
+    window.addEventListener('load', () => scheduleDraw());
+    window.addEventListener('resize', scheduleDraw);
+  </script>
+</body>
+</html>
