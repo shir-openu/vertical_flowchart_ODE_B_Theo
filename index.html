@@ -1,267 +1,241 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>מפת קורס – עץ אנכי</title>
-
+  <title>כרך ב' - מד"ר מסדר גבוה - טכניקות פתרון</title>
   <style>
     :root{
-      --bg: #0f3940;            /* צבע רקע */
-      --card: #0e2530;          /* צבע כרטיס */
-      --text: #eaf7f9;          /* צבע טקסט */
-      --accent: #c73737;        /* צבע מסגרות וקווים */
-      --text-dim:#b8d0d6;
+      /* צבעים */
+      --edge:#6b7280;
+      --lvl1:#a78bfa; --lvl2:#60a5fa; --lvl3:#34d399; --lvl4:#22d3ee;
+      --txt:#e5e7eb;
+
+      /* סקלת גודל כוללת */
+      --k: 1.45; 
+
+      /* מידות בסיס */
+      --w0:260px;
+      --pad0:12px; --gap0:60px; --v-gap0:50px; --radius0:16px; --fs0:14px;
+      --shadow:0 6px 18px rgba(0,0,0,.25);
+
+      /* מחושבות */
+      --w: var(--w0);
+      --pad: calc(var(--pad0) * var(--k));
+      --gap: var(--gap0);
+      --v-gap: calc(var(--v-gap0) * var(--k));
+      --radius: var(--radius0);
+      --fs: calc(var(--fs0) * var(--k));
     }
 
-    /* רקע ומסגרת כללית */
-    html,body{
-      margin:0;
-      height:100%;
-      background: radial-gradient(1200px 800px at 20% 10%, #1a5963 0%, #0f3940 60%, #0a2a30 100%);
-      font-family: "Heebo", "Rubik", Arial, sans-serif;
-      color: var(--text);
-    }
-    .wrap{
-      box-sizing: border-box;
-      max-width: 1100px;        /* שולט על הרוחב המקסימלי */
-      margin: 24px auto 64px;
-      padding: 8px 8px 40px;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:"Rubik","Segoe UI",Tahoma,Arial,Helvetica,sans-serif;
+      background:linear-gradient(135deg,#0f172a 0%,#111827 60%,#0b1226 100%); color:var(--txt);
+      padding:0;
     }
 
-    /* כותרת */
-    h1{
-      text-align:center;
-      margin:0 0 18px;
-      font-weight:700;
-      letter-spacing:.3px;
+    .wrap{width:100vw; height:100vh; display:flex; flex-direction:column; gap:8px}
+
+    .toolbar{
+      padding:10px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+    .title{font-weight:700}
+
+    .zoom-controls button{
+      margin-inline-start:8px;
+      padding:4px 10px;
+      border-radius:8px;
+      border:1px solid #334155;
+      background:#0b1226;
+      color:var(--txt);
+      cursor:pointer;
+    }
+    .zoom-controls button:hover{filter:brightness(1.2)}
+
+    .stage{
+      flex:1; margin:0 18px 18px; border-radius:18px; overflow:auto;
+      background:rgba(11,18,38,.85); border:1px solid #1f2937; box-shadow:0 12px 32px rgba(0,0,0,.25);
+      position:relative; padding:30px;
+    }
+    .canvas{position:relative; isolation:isolate; padding:10px;}
+    .edges{position:absolute; inset:0; z-index:1; pointer-events:none}
+
+    .layer{position:relative; display:flex; justify-content:center; gap:var(--gap); margin-bottom:var(--v-gap); z-index:2}
+
+    .layer.grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(var(--w), var(--w)));
+      justify-content: space-evenly; 
+      gap: var(--gap);
     }
 
-    /* עץ כ־UL/LI עם קווים (Top→Down) */
-    .tree{
-      display:block;
-      width:100%;
-      overflow-x:auto;          /* ביטוח נגד עומס רוחב נדיר */
-      padding-bottom:24px;
-    }
-    .tree ul{
-      position: relative;
-      padding-top: 24px;        /* מקום לקווים כלפי מעלה */
-      padding-inline-start: 0;
-      margin: 0;
-      text-align:center;
-    }
-    .tree li{
-      display:inline-block;
-      vertical-align:top;
-      list-style-type:none;
-      position: relative;
-      padding: 24px 10px 0 10px; /* רווח בין דורות */
-    }
-
-    /* קווי חיבור אנכיים/אופקיים */
-    .tree li::before, .tree li::after{
-      content:'';
-      position:absolute;
-      top:0;
-      right:50%;
-      border-top:2px solid var(--accent);
-      width:50%;
-      height:24px;
-    }
-    .tree li::after{
-      right:auto;
-      left:50%;
-      border-right:none;
-      border-left:none;
-    }
-    /* אין קווי צדדים לילד יחיד */
-    .tree li:only-child::before, .tree li:only-child::after{
-      display:none;
-    }
-    /* ילד ראשון – קו רק לצד שמאל */
-    .tree li:first-child::before{
-      border-top:none;
-    }
-    /* ילד אחרון – קו רק לצד ימין */
-    .tree li:last-child::after{
-      border-top:none;
-    }
-    /* קו אנכי ממרכז כל כרטיס מעלה */
-    .tree ul ul::before{
-      content:'';
-      position:absolute;
-      top:0;
-      right:50%;
-      border-right:2px solid var(--accent);
-      width:0;
-      height:24px;
-    }
-
-    /* כרטיס הצומת */
     .node{
-      display:inline-block;
-      min-width: 160px;
-      max-width: 240px;
-      background: rgba(14,37,48,.92);
-      border:2px solid var(--accent);
-      border-radius: 14px;
-      padding:10px 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,.35);
-      line-height:1.35;
-      text-decoration:none;
-      color:var(--text);
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
-    .node small{ color: var(--text-dim); display:block; margin-top:2px; }
-    .node:hover, .node:focus{
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,.45);
-      border-color:#e04646;
-      outline: none;
+      position:relative; z-index:3;
+      width:var(--w);
+      padding:var(--pad);
+      border-radius:var(--radius);
+      background:#0b1226; color:var(--txt);
+      text-align:center;
+
+      font-size:var(--fs);
+      line-height:1.45;
+      white-space:normal;
+      overflow-wrap:break-word; word-break:normal;
+      min-height:60px;
+
+      box-shadow:var(--shadow);
     }
 
-    /* תגיות קטנות (אופציונלי) */
-    .badge{
-      display:inline-block;
-      font-size:.78rem;
-      border:1px solid var(--accent);
-      padding:.05rem .45rem;
-      border-radius:999px;
-      margin-top:.25rem;
-      color:var(--text-dim);
+    .lvl1{background:linear-gradient(135deg,#6d28d9,#8b5cf6); font-size:calc(var(--fs)*1.6)}
+    .lvl2{background:linear-gradient(135deg,#2563eb,#60a5fa); font-size:calc(var(--fs)*1.4)}
+    .lvl3{background:linear-gradient(135deg,#059669,#34d399); font-size:calc(var(--fs)*1.2)}
+    .lvl4{
+      background:linear-gradient(135deg,#0891b2,#22d3ee);
+      color:#042430;
+      font-size:calc(var(--fs)*1.05);
+      min-height:56px;
     }
 
-    /* רספונסיביות: צמצום רוחב/פונט במסכים צרים */
-    @media (max-width: 760px){
-      .node{ min-width: 136px; max-width: 200px; font-size: .95rem; }
-      .tree li{ padding-top: 18px; }
-      .tree ul{ padding-top: 18px; }
-      .tree ul ul::before{ height:18px; }
-      .tree li::before, .tree li::after{ height:18px; }
+    a.node{text-decoration:underline; display:block; cursor:pointer}
+    a.node:hover{ text-decoration:none; filter:brightness(1.1) }
+
+    .subcol{display:flex; flex-direction:column; align-items:center; gap:16px}
+    .subcol .node.lvl4{margin-top:6px}
+
+    @media (min-width:1400px){
+      #L2{
+        display:grid;
+        grid-template-columns: repeat(7, var(--w));
+        gap: var(--gap);
+        justify-content:center;
+      }
+      #chap2{ grid-column: 1 / span 4; justify-self:center; }
+      #chap3{ grid-column: 5 / span 3; justify-self:center; }
+    }
+
+    /* === כאן אני מוסיף את ה־Overrides כדי להפוך את הנכדים לאנכיים === */
+    #L2{
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: var(--v-gap) !important;
+    }
+    #L3{
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: var(--v-gap) !important;
+    }
+    #L3 .subcol{
+      width: var(--w) !important;
+      max-width: var(--w) !important;
+      margin: 0 auto !important;
+    }
+    .layer.grid{
+      display: block !important;
+    }
+    @media (min-width:1400px){
+      #L2{ display: flex !important; flex-direction: column !important; gap: var(--v-gap) !important; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>מפת קורס – עץ אנכי</h1>
-
-    <div class="tree" role="tree" aria-label="מפת הקורס">
-      <!-- ROOT -->
-      <ul>
-        <li>
-          <a class="node" role="treeitem" href="https://moodle.example/root" target="_blank" rel="noopener">
-            מבוא למד״ר
-            <small>עמוד פתיחה/הסבר כללי</small>
-          </a>
-
-          <!-- דור 1 -->
-          <ul>
-            <li>
-              <a class="node" role="treeitem" href="https://moodle.example/book-a" target="_blank" rel="noopener">
-                כרך א׳ – סדר ראשון
-                <small>נושאי יסוד</small>
-              </a>
-              <!-- דור 2 של כרך א׳ -->
-              <ul>
-                <li><a class="node" href="https://moodle.example/a-techniques" target="_blank">טכניקות פתרון</a></li>
-                <li><a class="node" href="https://moodle.example/a-existence" target="_blank">משפטי קיום ויחידות</a></li>
-                <li><a class="node" href="https://moodle.example/a-field" target="_blank">שדה הכיוונים ללמידה</a></li>
-                <li>
-                  <a class="node" href="https://moodle.example/a-unit-1" target="_blank">
-                    יחידות הלימוד
-                    <small>סיכומי יחידות</small>
-                  </a>
-                  <!-- דור 3 לדוגמה -->
-                  <ul>
-                    <li><a class="node" href="https://moodle.example/a-demo-1" target="_blank">דוגמה 1</a></li>
-                    <li><a class="node" href="https://moodle.example/a-demo-2" target="_blank">דוגמה 2</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-
-            <li>
-              <a class="node" role="treeitem" href="https://moodle.example/book-b" target="_blank" rel="noopener">
-                כרך ב׳ – סדר שני ומעלה
-              </a>
-              <!-- דור 2 של כרך ב׳ -->
-              <ul>
-                <li><a class="node" href="https://moodle.example/b-techniques" target="_blank">טכניקות פתרון</a></li>
-                <li><a class="node" href="https://moodle.example/b-existence" target="_blank">משפטי קיום ויחידות</a></li>
-                <li>
-                  <a class="node" href="https://moodle.example/b-eq-types" target="_blank">
-                    איזוכלינות ולוקליזציה
-                    <span class="badge">המחשה</span>
-                  </a>
-                </li>
-              </ul>
-            </li>
-
-            <li>
-              <a class="node" role="treeitem" href="https://moodle.example/book-c" target="_blank" rel="noopener">
-                כרך ג׳ – מערכת ליניארית
-              </a>
-              <!-- דור 2 של כרך ג׳ -->
-              <ul>
-                <li><a class="node" href="https://moodle.example/c-techniques" target="_blank">טכניקות פתרון</a></li>
-                <li><a class="node" href="https://moodle.example/c-existence" target="_blank">משפטי קיום ויחידות</a></li>
-              </ul>
-            </li>
-          </ul>
-
-          <!-- פסי ביניים/שלטים (אופציונלי) -->
-          <ul>
-            <li><a class="node" href="https://moodle.example/policy-1" target="_blank">משופי הקיום והיחידות למד״ר ליצירת מסדר ראשון</a></li>
-            <li><a class="node" href="https://moodle.example/policy-2" target="_blank">משופי הקיום והיחידות להטמעת התחלה מסדר ראשון</a></li>
-          </ul>
-
-          <!-- מסלול “היבטים גיאומטריים” לדוגמה -->
-          <ul>
-            <li>
-              <a class="node" href="https://moodle.example/geom-aspects" target="_blank">
-                היבטים גיאומטריים
-                <small>סיגנלים, מפות, ממ״ן 11</small>
-              </a>
-              <ul>
-                <li><a class="node" href="https://moodle.example/singularities" target="_blank">סינגולריות</a></li>
-                <li><a class="node" href="https://moodle.example/sep-variables" target="_blank">“הפרדת” פרמטרים</a></li>
-                <li><a class="node" href="https://moodle.example/maman11" target="_blank">ממ״ן 11</a></li>
-              </ul>
-            </li>
-
-            <li>
-              <a class="node" href="https://moodle.example/extensions" target="_blank">מעטפת</a>
-              <ul>
-                <li><a class="node" href="https://moodle.example/domain-solution" target="_blank">תחום קיום הפתרון</a></li>
-                <li><a class="node" href="https://moodle.example/example" target="_blank">דוגמה</a></li>
-              </ul>
-            </li>
-
-            <li>
-              <a class="node" href="https://moodle.example/families" target="_blank">משפחות אורתגונליות</a>
-              <ul>
-                <li><a class="node" href="https://moodle.example/families-orth" target="_blank">אורתוגונליות</a></li>
-              </ul>
-            </li>
-          </ul>
-
-        </li>
-      </ul>
+    <div class="toolbar">
+      <div class="title">כרך ב' - מד"ר מסדר גבוה - טכניקות פתרון</div>
+      <div class="zoom-controls">
+        <button id="zout" title="הקטנה">A−</button>
+        <button id="zin"  title="הגדלה">A+</button>
+      </div>
     </div>
-  </div>
 
-  <!-- התאמה אוטומטית לגובה בתוך iframe של Moodle (אופציונלי) -->
-  <script>
-    // אם הדף מוטמע בתוך iframe, ננסה לשלוח את הגובה להורה (למשתמשי Moodle)
-    function postHeight(){
-      try{
-        const h = document.documentElement.scrollHeight;
-        parent.postMessage({ type:"FLOWCHART_HEIGHT", height:h }, "*");
-      }catch(e){}
-    }
-    window.addEventListener("load", postHeight);
-    window.addEventListener("resize", ()=>{ clearTimeout(window.__rh); window.__rh=setTimeout(postHeight, 120); });
-  </script>
-</body>
-</html>
+    <div class="stage">
+      <div class="canvas" id="canvas">
+        <svg class="edges" id="edges" xmlns="http://www.w3.org/2000/svg"></svg>
+
+        <!-- שכבה 1 -->
+        <div class="layer" id="L1">
+          <div class="node lvl1" id="root">כרך ב' – מד"ר מסדר גבוה – טכניקות פתרון</div>
+        </div>
+
+        <!-- שכבה 2 -->
+        <div class="layer" id="L2">
+          <div class="node lvl2" id="chap2">פרק 2 – סדר שני</div>
+          <div class="node lvl2" id="chap3">פרק 3 – סדר גבוה</div>
+        </div>
+
+        <!-- שכבה 3 + שכבה 4 -->
+        <div class="layer grid" id="L3">
+          <!-- כל ה־subcol שלך נשמר בדיוק כמו שהיה -->
+          <!-- c2_homo_const -->
+          <div class="subcol" id="col_c2_homo_const">
+            <div class="node lvl3" id="c2_homo_const">מד"ר לינארית הומוגנית – מקדמים קבועים </div>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6756889" class="node lvl4" id="c2_hc_i1">יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6756892" class="node lvl4" id="c2_hc_i2">דרך הפתרון</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6756855&from=topNext" class="node lvl4" id="c2_hc_i3">טבלה 2.4.2</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6756856&from=topNext" class="node lvl4" id="c2_hc_i4">דוגמאות</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827875&from=topNext" class="node lvl4" id="c2_hc_i5">דוגמה - משוואת אוילר </a> 
+          </div>
+
+          <!-- c2_inh_const -->
+          <div class="subcol" id="col_c2_inh_const">
+            <div class="node lvl3" id="c2_inh_const">מד"ר לינארית אי-הומוגנית - מקדמים קבועים</div>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758079" class="node lvl4" id="c2_ic_i1">השוואת מקדמים - יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757237&from=topNext" class="node lvl4" id="c2_ic_i2"> השוואת מקדמים - דרך הפתרון</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757238&from=topNext" class="node lvl4" id="c2_ic_i3">השוואת מקדמים - צורת הפתרון הפרטי</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827902&from=topNext" class="node lvl4" id="c2_ic_i4">השוואת מקדמים - דוגמה</a>
+          </div>
+
+          <!-- c2_inh_cont -->
+          <div class="subcol" id="col_c2_inh_cont">
+            <div class="node lvl3" id="c2_inh_cont">מד"ר לינארית אי-הומוגנית - מקדמים רציפים</div>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758080" class="node lvl4" id="c2_ir_i1">וריאציית הפרמטרים - יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757256&from=topNext" class="node lvl4" id="c2_ir_i2">וריאציית הפרמטרים - אינטואיציה</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827896&from=topNext" class="node lvl4" id="c2_ir_i3">וריאציית הפרמטרים - דרך הפתרון</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827876&from=topNext" class="node lvl4" id="c2_ir_i4">וריאציית הפרמטרים - דוגמה</a>
+          </div>
+
+          <!-- c2_reduce -->
+          <div class="subcol" id="col_c2_reduce">
+            <div class="node lvl3" id="c2_reduce">הורדת סדר המשוואה – מסדר שני לסדר ראשון</div>     
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832091" class="node lvl4" id="c2_rd_i1">משוואה חסרה מטיפוס 1 - יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832089&from=topNext" class="node lvl4" id="c2_rd_i2">משוואה חסרה מטיפוס 1 - דרך הפתרון ודוגמה</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832107&from=topNext" class="node lvl4" id="c2_rd_i3">משוואה חסרה מטיפוס 2 - יחידות הלמוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832087&from=topNext" class="node lvl4" id="c2_rd_i4">משוואה חסרה מטיפוס 2 - דרך הפתרון ודוגמה</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832085&from=topNext" class="node lvl4" id="c2_rd_i5">הורדת סדר בעזרת פתרון ידוע - יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832081&from=topNext" class="node lvl4" id="c2_rd_i6">הורדת סדר בעזרת פתרון ידוע - דרך הפתרון </a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6832083&from=topNext" class="node lvl4" id="c2_rd_i7">הורדת סדר בעזרת פתרון ידוע - דוגמה </a>
+          </div>
+
+          <!-- c3_homo_const -->
+          <div class="subcol" id="col_c3_homo_const">
+            <div class="node lvl3" id="c3_homo_const">מד"ר לינארית הומוגנית – מקדמים קבועים (n)</div>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757240" class="node lvl4" id="c3_hc_i1">יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757250&from=topNext" class="node lvl4" id="c3_hc_i2">שורשים מרובבים</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757241&from=topNext" class="node lvl4" id="c3_hc_i3">דרך הפתרון</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757242&from=topNext" class="node lvl4" id="c3_hc_i4">טבלה מסכמת</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6827877&from=topNext" class="node lvl4" id="c3_hc_i5">דוגמה</a>
+          </div>
+
+          <!-- c3_inh_const -->
+          <div class="subcol" id="col_c3_inh_const">
+            <div class="node lvl3" id="c3_inh_const">מד"ר לינארית אי-הומוגנית - מקדמים קבועים (n)</div>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758152&from=topPrev" class="node lvl4" id="c3_ic_i1"> סדר גבוה - השוואת מקדמים - יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757245&from=topNext" class="node lvl4" id="c3_ic_i2">סדר גבוה - השוואת מקדמים -דרך הפתרון</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757246&from=topNext" class="node lvl4" id="c3_ic_i3">סדר גבוה - השוואת מקדמים - צורת הפתרון הפרטי</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757243&from=topNext" class="node lvl4" id="c3_ic_i4">סדר גבוה - השוואת מקדמים - דוגמה</a>
+          </div>
+
+          <!-- c3_inh_cont -->
+          <div class="subcol" id="col_c3_inh_cont">
+            <div class="node lvl3" id="c3_inh_cont">מד"ר לינארית אי-הומוגנית - מקדמים רציפים (n)</div>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6758154" class="node lvl4" id="c3_ir_i1">סדר גבוה - וריאציית הפרמטרים - יחידות הלימוד</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6757255&from=topNext" class="node lvl4" id="c3_ir_i2">סדר גבוה - וריאציית הפרמטרים - אינטואיציה</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?id=6761715&from=topNext" class="node lvl4" id="c3_ir_i3">סדר גבוה - וריאציית הפרמטרים - דרך הפתרון</a>
+            <a href="https://opal.openu.ac.il/mod/combopage/view.php?c=312647#p573761" class="node lvl
