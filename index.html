@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>מפת קורס – עץ אנכי</title>
+
+  <style>
+    :root{
+      --bg: #0f3940;            /* צבע רקע */
+      --card: #0e2530;          /* צבע כרטיס */
+      --text: #eaf7f9;          /* צבע טקסט */
+      --accent: #c73737;        /* צבע מסגרות וקווים */
+      --text-dim:#b8d0d6;
+    }
+
+    /* רקע ומסגרת כללית */
+    html,body{
+      margin:0;
+      height:100%;
+      background: radial-gradient(1200px 800px at 20% 10%, #1a5963 0%, #0f3940 60%, #0a2a30 100%);
+      font-family: "Heebo", "Rubik", Arial, sans-serif;
+      color: var(--text);
+    }
+    .wrap{
+      box-sizing: border-box;
+      max-width: 1100px;        /* שולט על הרוחב המקסימלי */
+      margin: 24px auto 64px;
+      padding: 8px 8px 40px;
+    }
+
+    /* כותרת */
+    h1{
+      text-align:center;
+      margin:0 0 18px;
+      font-weight:700;
+      letter-spacing:.3px;
+    }
+
+    /* עץ כ־UL/LI עם קווים (Top→Down) */
+    .tree{
+      display:block;
+      width:100%;
+      overflow-x:auto;          /* ביטוח נגד עומס רוחב נדיר */
+      padding-bottom:24px;
+    }
+    .tree ul{
+      position: relative;
+      padding-top: 24px;        /* מקום לקווים כלפי מעלה */
+      padding-inline-start: 0;
+      margin: 0;
+      text-align:center;
+    }
+    .tree li{
+      display:inline-block;
+      vertical-align:top;
+      list-style-type:none;
+      position: relative;
+      padding: 24px 10px 0 10px; /* רווח בין דורות */
+    }
+
+    /* קווי חיבור אנכיים/אופקיים */
+    .tree li::before, .tree li::after{
+      content:'';
+      position:absolute;
+      top:0;
+      right:50%;
+      border-top:2px solid var(--accent);
+      width:50%;
+      height:24px;
+    }
+    .tree li::after{
+      right:auto;
+      left:50%;
+      border-right:none;
+      border-left:none;
+    }
+    /* אין קווי צדדים לילד יחיד */
+    .tree li:only-child::before, .tree li:only-child::after{
+      display:none;
+    }
+    /* ילד ראשון – קו רק לצד שמאל */
+    .tree li:first-child::before{
+      border-top:none;
+    }
+    /* ילד אחרון – קו רק לצד ימין */
+    .tree li:last-child::after{
+      border-top:none;
+    }
+    /* קו אנכי ממרכז כל כרטיס מעלה */
+    .tree ul ul::before{
+      content:'';
+      position:absolute;
+      top:0;
+      right:50%;
+      border-right:2px solid var(--accent);
+      width:0;
+      height:24px;
+    }
+
+    /* כרטיס הצומת */
+    .node{
+      display:inline-block;
+      min-width: 160px;
+      max-width: 240px;
+      background: rgba(14,37,48,.92);
+      border:2px solid var(--accent);
+      border-radius: 14px;
+      padding:10px 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.35);
+      line-height:1.35;
+      text-decoration:none;
+      color:var(--text);
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .node small{ color: var(--text-dim); display:block; margin-top:2px; }
+    .node:hover, .node:focus{
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.45);
+      border-color:#e04646;
+      outline: none;
+    }
+
+    /* תגיות קטנות (אופציונלי) */
+    .badge{
+      display:inline-block;
+      font-size:.78rem;
+      border:1px solid var(--accent);
+      padding:.05rem .45rem;
+      border-radius:999px;
+      margin-top:.25rem;
+      color:var(--text-dim);
+    }
+
+    /* רספונסיביות: צמצום רוחב/פונט במסכים צרים */
+    @media (max-width: 760px){
+      .node{ min-width: 136px; max-width: 200px; font-size: .95rem; }
+      .tree li{ padding-top: 18px; }
+      .tree ul{ padding-top: 18px; }
+      .tree ul ul::before{ height:18px; }
+      .tree li::before, .tree li::after{ height:18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>מפת קורס – עץ אנכי</h1>
+
+    <div class="tree" role="tree" aria-label="מפת הקורס">
+      <!-- ROOT -->
+      <ul>
+        <li>
+          <a class="node" role="treeitem" href="https://moodle.example/root" target="_blank" rel="noopener">
+            מבוא למד״ר
+            <small>עמוד פתיחה/הסבר כללי</small>
+          </a>
+
+          <!-- דור 1 -->
+          <ul>
+            <li>
+              <a class="node" role="treeitem" href="https://moodle.example/book-a" target="_blank" rel="noopener">
+                כרך א׳ – סדר ראשון
+                <small>נושאי יסוד</small>
+              </a>
+              <!-- דור 2 של כרך א׳ -->
+              <ul>
+                <li><a class="node" href="https://moodle.example/a-techniques" target="_blank">טכניקות פתרון</a></li>
+                <li><a class="node" href="https://moodle.example/a-existence" target="_blank">משפטי קיום ויחידות</a></li>
+                <li><a class="node" href="https://moodle.example/a-field" target="_blank">שדה הכיוונים ללמידה</a></li>
+                <li>
+                  <a class="node" href="https://moodle.example/a-unit-1" target="_blank">
+                    יחידות הלימוד
+                    <small>סיכומי יחידות</small>
+                  </a>
+                  <!-- דור 3 לדוגמה -->
+                  <ul>
+                    <li><a class="node" href="https://moodle.example/a-demo-1" target="_blank">דוגמה 1</a></li>
+                    <li><a class="node" href="https://moodle.example/a-demo-2" target="_blank">דוגמה 2</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <a class="node" role="treeitem" href="https://moodle.example/book-b" target="_blank" rel="noopener">
+                כרך ב׳ – סדר שני ומעלה
+              </a>
+              <!-- דור 2 של כרך ב׳ -->
+              <ul>
+                <li><a class="node" href="https://moodle.example/b-techniques" target="_blank">טכניקות פתרון</a></li>
+                <li><a class="node" href="https://moodle.example/b-existence" target="_blank">משפטי קיום ויחידות</a></li>
+                <li>
+                  <a class="node" href="https://moodle.example/b-eq-types" target="_blank">
+                    איזוכלינות ולוקליזציה
+                    <span class="badge">המחשה</span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <a class="node" role="treeitem" href="https://moodle.example/book-c" target="_blank" rel="noopener">
+                כרך ג׳ – מערכת ליניארית
+              </a>
+              <!-- דור 2 של כרך ג׳ -->
+              <ul>
+                <li><a class="node" href="https://moodle.example/c-techniques" target="_blank">טכניקות פתרון</a></li>
+                <li><a class="node" href="https://moodle.example/c-existence" target="_blank">משפטי קיום ויחידות</a></li>
+              </ul>
+            </li>
+          </ul>
+
+          <!-- פסי ביניים/שלטים (אופציונלי) -->
+          <ul>
+            <li><a class="node" href="https://moodle.example/policy-1" target="_blank">משופי הקיום והיחידות למד״ר ליצירת מסדר ראשון</a></li>
+            <li><a class="node" href="https://moodle.example/policy-2" target="_blank">משופי הקיום והיחידות להטמעת התחלה מסדר ראשון</a></li>
+          </ul>
+
+          <!-- מסלול “היבטים גיאומטריים” לדוגמה -->
+          <ul>
+            <li>
+              <a class="node" href="https://moodle.example/geom-aspects" target="_blank">
+                היבטים גיאומטריים
+                <small>סיגנלים, מפות, ממ״ן 11</small>
+              </a>
+              <ul>
+                <li><a class="node" href="https://moodle.example/singularities" target="_blank">סינגולריות</a></li>
+                <li><a class="node" href="https://moodle.example/sep-variables" target="_blank">“הפרדת” פרמטרים</a></li>
+                <li><a class="node" href="https://moodle.example/maman11" target="_blank">ממ״ן 11</a></li>
+              </ul>
+            </li>
+
+            <li>
+              <a class="node" href="https://moodle.example/extensions" target="_blank">מעטפת</a>
+              <ul>
+                <li><a class="node" href="https://moodle.example/domain-solution" target="_blank">תחום קיום הפתרון</a></li>
+                <li><a class="node" href="https://moodle.example/example" target="_blank">דוגמה</a></li>
+              </ul>
+            </li>
+
+            <li>
+              <a class="node" href="https://moodle.example/families" target="_blank">משפחות אורתגונליות</a>
+              <ul>
+                <li><a class="node" href="https://moodle.example/families-orth" target="_blank">אורתוגונליות</a></li>
+              </ul>
+            </li>
+          </ul>
+
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- התאמה אוטומטית לגובה בתוך iframe של Moodle (אופציונלי) -->
+  <script>
+    // אם הדף מוטמע בתוך iframe, ננסה לשלוח את הגובה להורה (למשתמשי Moodle)
+    function postHeight(){
+      try{
+        const h = document.documentElement.scrollHeight;
+        parent.postMessage({ type:"FLOWCHART_HEIGHT", height:h }, "*");
+      }catch(e){}
+    }
+    window.addEventListener("load", postHeight);
+    window.addEventListener("resize", ()=>{ clearTimeout(window.__rh); window.__rh=setTimeout(postHeight, 120); });
+  </script>
+</body>
+</html>
